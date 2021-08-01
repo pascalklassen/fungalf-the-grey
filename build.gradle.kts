@@ -18,6 +18,7 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     implementation("net.dv8tion:JDA:4.3.0_301")
+    implementation("ch.qos.logback:logback-classic:1.2.3")
 }
 
 tasks.test {
