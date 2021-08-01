@@ -1,4 +1,9 @@
 package io.github.pascalklassen
 
-class Launcher {
+import net.dv8tion.jda.api.JDABuilder
+
+fun main(args: Array<String>) {
+    val instance = JDABuilder
+        .createDefault(args.first())
+        .build()
 }
