@@ -1,6 +1,6 @@
 package io.github.pascalklassen.fungalf
 
-import io.github.pascalklassen.fungalf.command.PokeCommand
+import io.github.pascalklassen.fungalf.command.PokeCordCommand
 import mu.KotlinLogging
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
@@ -35,7 +35,7 @@ class FungalfBot(args: Array<String>): ListenerAdapter() {
 
         val tokens = tokensOf(event.message.contentRaw.lowercase())
 
-        PokeCommand().execute(Context(event, tokens.copyOfRange(1, tokens.size), client))
+        PokeCordCommand().execute(Context(event, tokens.copyOfRange(1, tokens.size), client))
     }
 
     private fun tokensOf(input: String) =
