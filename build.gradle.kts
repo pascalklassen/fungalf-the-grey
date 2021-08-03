@@ -13,6 +13,10 @@ repositories {
         name = "m2-dv8tion"
         url = uri("https://m2.dv8tion.net/releases")
     }
+    maven {
+        name = "ossrh"
+        url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
+    }
 }
 
 dependencies {
@@ -20,6 +24,8 @@ dependencies {
     implementation("net.dv8tion:JDA:4.3.0_301")
     implementation("ch.qos.logback:logback-classic:1.2.3")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.10")
+    implementation("com.google.guava:guava:30.1.1-jre")
+    implementation("io.github.pascalklassen:poke-future:0.0.1-SNAPSHOT")
 }
 
 tasks.test {
