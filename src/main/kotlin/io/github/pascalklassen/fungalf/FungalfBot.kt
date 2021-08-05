@@ -1,23 +1,27 @@
 package io.github.pascalklassen.fungalf
 
+import io.github.pascalklassen.fungalf.command.Context
 import io.github.pascalklassen.fungalf.command.PokeCordCommand
 import mu.KotlinLogging
-import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.ChannelType
-import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import java.awt.Color
 
-private const val BOT_NAME = "Fungalf the Grey"
+const val BOT_NAME = "Fungalf the Grey"
+const val PREFIX = "?"
 
-private val LOGGER = KotlinLogging.logger {  }
+private val LOGGER = KotlinLogging.logger {}
 
 class FungalfBot(args: Array<String>): ListenerAdapter() {
 
     private val client = JDABuilder
         .createDefault(args.first())
         .build()
+
+    private val command = PokeCordCommand()
 
     fun start() {
         LOGGER.info { "$BOT_NAME is starting!" }
@@ -31,11 +35,22 @@ class FungalfBot(args: Array<String>): ListenerAdapter() {
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
         if (event.author.isBot || event.channel.type != ChannelType.TEXT) return
-        if (!event.message.contentRaw.startsWith("?poke")) return
+        if (!event.message.contentRaw.startsWith(PREFIX)) return
 
         val tokens = tokensOf(event.message.contentRaw.lowercase())
 
-        PokeCordCommand().execute(Context(event, tokens.copyOfRange(1, tokens.size), client))
+        try {
+            command.execute(Context(event, tokens.copyOfRange(1, tokens.size), client))
+        } catch (ex: IllegalArgumentException) {
+            event.channel.sendMessageEmbeds(
+                with (EmbedBuilder()) {
+                    setTitle("Ungültige Eingabe")
+                    setDescription(ex.message)
+                    setColor(Color.RED)
+                    return@with build()
+                }
+            ).queue()
+        }
     }
 
     private fun tokensOf(input: String) =
@@ -45,14 +60,3 @@ class FungalfBot(args: Array<String>): ListenerAdapter() {
             .toTypedArray()
 }
 
-class Context(val event: MessageReceivedEvent, val args: Array<String>, val client: JDA) {
-
-    fun respond(message: MessageEmbed) = event.channel.sendMessageEmbeds(message).queue()
-    fun respond(message: String) = event.channel.sendMessage(message).queue()
-}
-
-abstract class Command(val name: String, val description: String, val usage: String? = "") {
-    abstract fun execute(context: Context)
-}
-
-class CommandHandler(val commands: List<Command>)

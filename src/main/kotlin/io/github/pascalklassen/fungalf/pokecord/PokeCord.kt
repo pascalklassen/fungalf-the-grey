@@ -1,12 +1,22 @@
 package io.github.pascalklassen.fungalf.pokecord
 
-class Snowflake(val value: Long)
+import kotlin.random.Random
 
-class TrainerId(val value: Int, val snowflake: Snowflake) {
-    override fun toString(): String {
-        return value.toString().padStart(6, '0')
+data class Snowflake(val value: Long)
+
+fun snowflakeOf(input: Any) =
+    when (input) {
+        is Long -> Snowflake(input)
+        is String -> Snowflake(input.toLong())
+        else -> throw IllegalArgumentException("'$input' was no suitable input for Snowflake")
     }
+
+data class TrainerId(val value: Int, val snowflake: Snowflake) {
+
+    override fun toString() = value.toString().padStart(6, '0')
 }
+
+fun randomTrainerId() = Random.nextInt(1_000_000)
 
 sealed class ItemCategory private constructor(val name: String) {
     class BattleItems(): ItemCategory("Battle Items")
@@ -29,11 +39,13 @@ class Trainer(val id: TrainerId, val bag: Bag, val pokedollar: Pokedollar)
 class TrainerRepository(trainers: List<Trainer> = listOf()) {
     private val trainers = trainers.associateByTo(mutableMapOf()) { it.id.snowflake }
 
+    fun contains(id: Snowflake) = trainers.containsKey(id)
+
     fun getOrCreateTrainerById(id: Snowflake) =
         trainers.getOrPut(id) {
             Trainer(
                 id = TrainerId(
-                    value = trainers.size + 1,
+                    value = randomTrainerId(),
                     snowflake = id
                 ),
                 bag = Bag(),
