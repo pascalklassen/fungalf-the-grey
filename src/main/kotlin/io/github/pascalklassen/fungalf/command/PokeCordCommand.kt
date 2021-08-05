@@ -87,7 +87,7 @@ class PokeCordCommand: Command(
 
         val starterName = context.args.first().lowercase()
 
-        //if (starterName !in validStarterPokemon) fail("Deine Eingabe war kein gültiges starter Pokémon.")
+        if (starterName !in validStarterPokemon) fail("Deine Eingabe war kein gültiges starter Pokémon.")
 
         Pokemon.fetch(starterName)
             .onSuccess { claimPokemon(it, context) }
