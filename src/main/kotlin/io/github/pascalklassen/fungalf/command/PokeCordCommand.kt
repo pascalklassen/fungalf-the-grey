@@ -105,7 +105,7 @@ class PokeCordCommand: Command(
                         besuchen um dein Pokémon zu trainieren.
                         
                         > **Wähle ein starter Gebiet aus**
-                        Gib dazu `${PREFIX}pc walk [area]` ein um eins der oben aufgelisteten Gebiete zu betreten.
+                        Gib dazu `${PREFIX}$name walk [area]` ein um eins der oben aufgelisteten Gebiete zu betreten.
                     """.trimIndent()
                 )
                 setColor(Color.RED)

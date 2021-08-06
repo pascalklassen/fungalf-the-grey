@@ -2,6 +2,9 @@ package io.github.pascalklassen.fungalf.pokecord
 
 import kotlin.random.Random
 
+class Level()
+class Pokemon()
+
 data class Snowflake(val value: Long)
 
 fun snowflakeOf(input: Any) =

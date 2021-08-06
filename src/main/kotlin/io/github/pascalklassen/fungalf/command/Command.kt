@@ -3,7 +3,6 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
-
 class Context(val event: MessageReceivedEvent, val args: Array<String>, val jda: JDA) {
 
     fun respond(message: MessageEmbed) =
