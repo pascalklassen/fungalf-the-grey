@@ -23,7 +23,7 @@ object MySQLHandler: ConfigSpec("MYSQL"), MySQLPool {
     private val username by required<String>(name = "USERNAME")
     private val password by required<String>(name = "PASSWORD")
 
-    private val maxPoolSize by optional(5)
+    private val maxPoolSize by optional(name = "MAX_POOL_SIZE", default = 5)
 
     private val config = Config { addSpec(this@MySQLHandler) }.from.env()
 
