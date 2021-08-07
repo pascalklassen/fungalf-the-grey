@@ -1,10 +1,10 @@
 package io.github.pascalklassen.fungalf
 
+import com.uchuhimo.konf.Config
+import com.uchuhimo.konf.ConfigSpec
 import io.github.pascalklassen.fungalf.command.Context
 import io.github.pascalklassen.fungalf.command.PokeCordCommand
-import io.vertx.kotlin.mysqlclient.mySQLConnectOptionsOf
-import io.vertx.kotlin.sqlclient.poolOptionsOf
-import io.vertx.mysqlclient.MySQLPool
+import io.github.pascalklassen.fungalf.handler.MySQLHandler
 import mu.KotlinLogging
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDABuilder
@@ -18,49 +18,27 @@ const val PREFIX = "?"
 
 private val LOGGER = KotlinLogging.logger {}
 
-class FungalfBot(args: Array<String>): ListenerAdapter() {
+class FungalfBot: ListenerAdapter() {
 
-    private val botToken = args.first()
-    private val dbUserName = args[1]
-    private val dbPassword = args[2]
+    private val config = Config { addSpec(BotSpec) }.from.env()
 
     private val jda = JDABuilder
-        .createDefault(botToken)
+        .createDefault(config[token])
         .build()
-
-    private val dbClient = MySQLPool.pool(
-        mySQLConnectOptionsOf(
-            host = "localhost",
-            port = 3306,
-            database = "fungalf_the_grey",
-            user = dbUserName,
-            password = dbPassword
-        ),
-        poolOptionsOf(
-            maxSize = 5
-        )
-    )
 
     private val command = PokeCordCommand()
 
     fun start() {
         LOGGER.info { "$BOT_NAME is starting!" }
         jda.addEventListener(this)
-        dbClient
-            .query("SELECT * FROM TABLES;")
-            .execute {
-                if (it.succeeded()) {
-                    LOGGER.info { it.result().forEach { row -> row.toJson() } }
-                } else {
-                    LOGGER.error { it.cause().message }
-                }
-            }
+        MySQLHandler.query("SELECT * FROM TABLES")
+            .execute()
     }
 
     fun stop() {
         LOGGER.info { "$BOT_NAME is shutting down!" }
         jda.shutdown()
-        dbClient.close()
+        MySQLHandler.close()
     }
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
@@ -88,5 +66,8 @@ class FungalfBot(args: Array<String>): ListenerAdapter() {
             .replace("\\s+", " ")
             .split(" ")
             .toTypedArray()
-}
 
+    companion object BotSpec: ConfigSpec("BOT") {
+        val token by required<String>(name = "TOKEN")
+    }
+}

@@ -2,8 +2,8 @@ package io.github.pascalklassen.fungalf.command
 
 import com.google.common.base.CaseFormat
 import io.github.pascalklassen.fungalf.PREFIX
-import io.github.pascalklassen.fungalf.pokecord.TrainerRepository
-import io.github.pascalklassen.fungalf.pokecord.snowflakeOf
+import io.github.pascalklassen.fungalf.persistence.TrainerRegistry
+import io.github.pascalklassen.fungalf.pokecord.trainer.snowflakeOf
 import io.github.pascalklassen.pokefuture.pokemon.Pokemon
 import net.dv8tion.jda.api.EmbedBuilder
 import java.awt.Color
@@ -13,8 +13,6 @@ class PokeCordCommand: Command(
     name = "pc",
     description = "Test",
     usage = "[start | claim | help]") {
-
-    private val trainers = TrainerRepository()
 
     private val validStarterPokemon = listOf(
         "bulbasaur",
@@ -46,9 +44,9 @@ class PokeCordCommand: Command(
         val snowflake = snowflakeOf(author.idLong)
 
         // fail silently if user is already a trainer
-        if (trainers.contains(snowflake)) return
+        if (snowflake in TrainerRegistry) return
 
-        val trainer = trainers.getOrCreateTrainerById(snowflake)
+        val trainer = TrainerRegistry.getOrCreateTrainerById(snowflake)
 
         context.respond(
             with (EmbedBuilder()) {
