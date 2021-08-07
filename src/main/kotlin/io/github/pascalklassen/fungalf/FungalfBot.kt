@@ -31,8 +31,6 @@ class FungalfBot: ListenerAdapter() {
     fun start() {
         LOGGER.info { "$BOT_NAME is starting!" }
         jda.addEventListener(this)
-        MySQLHandler.query("SELECT * FROM TABLES")
-            .execute()
     }
 
     fun stop() {
