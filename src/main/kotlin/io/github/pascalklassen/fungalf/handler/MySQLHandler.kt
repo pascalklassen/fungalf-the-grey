@@ -19,7 +19,7 @@ object MySQLHandler: ConfigSpec("MYSQL"), MySQLPool {
 
     private val host by optional(name = "HOST", default = "localhost")
     private val port by optional(name = "PORT", default = 3306)
-    private val database by optional(name = "DATABASE", default = "fungalf_the_grey")
+    private val database by optional(name = "DATABASE", default = "")
     private val username by required<String>(name = "USERNAME")
     private val password by required<String>(name = "PASSWORD")
 
