@@ -2,6 +2,8 @@ DROP DATABASE IF EXISTS fungalf_the_grey;
 
 CREATE DATABASE IF NOT EXISTS fungalf_the_grey DEFAULT CHARSET utf8;
 
+USE fungalf_the_grey;
+
 CREATE TABLE IF NOT EXISTS trainer(
     id INT PRIMARY KEY NOT NULL,
     snowflake LONG NOT NULL,

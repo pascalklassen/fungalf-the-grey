@@ -5,3 +5,12 @@ services:
     env_file:
       - .env
     stop_signal: SIGTERM
+  mysql:
+    image: mysql:8.0
+    volumes:
+      - ftg-mysql-data:/var/lib/mysql
+      - ./src/main/resources/sql:/docker-entrypoint-initdb.d
+    env_file:
+      - .env
+volumes:
+  ftg-mysql-data:
