@@ -1,0 +1,7 @@
+version: "3.8"
+services:
+  fungalf-the-grey:
+    build: .
+    env_file:
+      - .env
+    stop_signal: SIGTERM

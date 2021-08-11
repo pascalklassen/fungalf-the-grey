@@ -1,11 +1,17 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    java
+    application
     kotlin("jvm") version "1.5.21"
 }
 
 group = "io.github.pascalklassen"
 version = "1.0-SNAPSHOT"
+
+application {
+    mainClass.set("io.github.pascalklassen.fungalf.LauncherKt")
+}
 
 repositories {
     mavenCentral() // for transitive dependencies
@@ -38,10 +44,16 @@ dependencies {
     implementation("com.uchuhimo:konf:1.1.2")
 }
 
-tasks.test {
-    useJUnit()
-}
+tasks {
+    withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = "1.8"
+    }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    test {
+        useJUnit()
+    }
+
+    installDist {
+        destinationDir = buildDir.resolve("libs/install")
+    }
 }
