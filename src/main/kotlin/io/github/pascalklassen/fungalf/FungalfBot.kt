@@ -4,7 +4,7 @@ import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.ConfigSpec
 import io.github.pascalklassen.fungalf.command.Context
 import io.github.pascalklassen.fungalf.command.PokeCordCommand
-import io.github.pascalklassen.fungalf.handler.MySQLHandler
+import io.github.pascalklassen.fungalf.persistence.Database
 import mu.KotlinLogging
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDABuilder
@@ -31,13 +31,13 @@ class FungalfBot: ListenerAdapter() {
     fun start() {
         LOGGER.info { "$BOT_NAME is starting!" }
         jda.addEventListener(this)
-        MySQLHandler.query("SHOW TABLES;").execute()
+        Database.init()
     }
 
     fun stop() {
         LOGGER.info { "$BOT_NAME is shutting down!" }
         jda.shutdown()
-        MySQLHandler.close()
+        Database.close()
     }
 
     override fun onMessageReceived(event: MessageReceivedEvent) {

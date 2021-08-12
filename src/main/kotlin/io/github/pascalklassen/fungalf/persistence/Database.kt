@@ -1,4 +1,4 @@
-package io.github.pascalklassen.fungalf.handler
+package io.github.pascalklassen.fungalf.persistence
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.ConfigSpec
@@ -15,17 +15,17 @@ import java.util.function.Function
 
 private val LOGGER = KotlinLogging.logger {}
 
-object MySQLHandler: ConfigSpec("MYSQL"), MySQLPool {
+object Database: ConfigSpec("MYSQL"), MySQLPool {
 
     private val host by optional(name = "HOST", default = "localhost")
     private val port by optional(name = "PORT", default = 3306)
-    private val database by optional(name = "DATABASE", default = "")
+    private val database by optional(name = "DATABASE", default = "fungalf_the_grey")
     private val username by required<String>(name = "USERNAME")
     private val password by required<String>(name = "PASSWORD")
 
     private val maxPoolSize by optional(name = "MAX_POOL_SIZE", default = 5)
 
-    private val config = Config { addSpec(this@MySQLHandler) }.from.env()
+    private val config = Config { addSpec(this@Database) }.from.env()
 
     private val pool = MySQLPool.pool(
         mySQLConnectOptionsOf(
@@ -40,7 +40,7 @@ object MySQLHandler: ConfigSpec("MYSQL"), MySQLPool {
         )
     )
 
-    init {
+    fun init() {
         LOGGER.info { "Connecting to database '${config[database]}' on ${config[host]}:${config[port]} with user '${config[username]}'." }
     }
 

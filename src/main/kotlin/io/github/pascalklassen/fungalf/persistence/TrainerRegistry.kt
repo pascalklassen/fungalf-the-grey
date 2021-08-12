@@ -1,26 +1,14 @@
 package io.github.pascalklassen.fungalf.persistence
 
-import io.github.pascalklassen.fungalf.pokecord.*
+import com.google.common.cache.Cache
 import io.github.pascalklassen.fungalf.pokecord.trainer.Snowflake
 import io.github.pascalklassen.fungalf.pokecord.trainer.Trainer
-import io.github.pascalklassen.fungalf.pokecord.trainer.TrainerId
 
-object TrainerRegistry {
-    private val trainers = mutableMapOf<Snowflake, Trainer>()
+typealias TrainerCache = Cache<Snowflake, Trainer>
 
-    operator fun contains(id: Snowflake) = trainers.containsKey(id)
+object TrainerRegistry: Closable {
 
-    fun getOrCreateTrainerById(id: Snowflake) =
-        trainers.getOrPut(id) {
-            Trainer(
-                id = TrainerId(
-                    value = TrainerId.random(),
-                    snowflake = id
-                ),
-                bag = Bag(),
-                pokedollar = Pokedollar(
-                    amount = 1000
-                )
-            )
-        }
+    override fun close() {
+        TODO()
+    }
 }
