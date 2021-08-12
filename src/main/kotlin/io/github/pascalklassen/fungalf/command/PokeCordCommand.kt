@@ -2,7 +2,8 @@ package io.github.pascalklassen.fungalf.command
 
 import com.google.common.base.CaseFormat
 import io.github.pascalklassen.fungalf.PREFIX
-import io.github.pascalklassen.fungalf.persistence.TrainerRegistry
+import io.github.pascalklassen.fungalf.persistence.trainer.TrainerRegistry
+import io.github.pascalklassen.fungalf.pokecord.trainer.Trainer
 import io.github.pascalklassen.fungalf.pokecord.trainer.snowflakeOf
 import io.github.pascalklassen.pokefuture.pokemon.Pokemon
 import net.dv8tion.jda.api.EmbedBuilder
@@ -43,11 +44,17 @@ class PokeCordCommand: Command(
         val author = context.event.author
         val snowflake = snowflakeOf(author.idLong)
 
+        // TODO: implement correct way to handle if trainer already exists
         // fail silently if user is already a trainer
         if (snowflake in TrainerRegistry) return
 
-        val trainer = TrainerRegistry.getOrCreateTrainerById(snowflake)
+        TrainerRegistry.getById(snowflake)
+            .onSuccess { sendWelcomeMessage(context, it) }
+            .onFailure { TODO("implement error handling for user") }
+    }
 
+    private fun sendWelcomeMessage(context: Context, trainer: Trainer) {
+        val author = context.event.author
         context.respond(
             with (EmbedBuilder()) {
                 setTitle("Willkommen ${author.name}! | Trainer No. ${trainer.id}")

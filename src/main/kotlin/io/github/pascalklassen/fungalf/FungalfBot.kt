@@ -5,6 +5,7 @@ import com.uchuhimo.konf.ConfigSpec
 import io.github.pascalklassen.fungalf.command.Context
 import io.github.pascalklassen.fungalf.command.PokeCordCommand
 import io.github.pascalklassen.fungalf.persistence.Database
+import io.github.pascalklassen.fungalf.persistence.trainer.TrainerRegistry
 import mu.KotlinLogging
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDABuilder
@@ -37,6 +38,7 @@ class FungalfBot: ListenerAdapter() {
     fun stop() {
         LOGGER.info { "$BOT_NAME is shutting down!" }
         jda.shutdown()
+        TrainerRegistry.close()
         Database.close()
     }
 
