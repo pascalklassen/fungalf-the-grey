@@ -6,7 +6,6 @@ import io.github.pascalklassen.fungalf.pokecord.Bag
 import io.github.pascalklassen.fungalf.pokecord.Pokedollar
 import io.github.pascalklassen.fungalf.pokecord.trainer.Snowflake
 import io.github.pascalklassen.fungalf.pokecord.trainer.Trainer
-import io.github.pascalklassen.fungalf.pokecord.trainer.TrainerId
 import io.github.pascalklassen.fungalf.pokecord.trainer.snowflakeOf
 import io.vertx.core.Future
 import io.vertx.core.Promise
@@ -21,8 +20,9 @@ object TrainerRepository: Repository<Snowflake, Trainer> {
         Database
             .preparedQuery("SELECT * FROM trainer WHERE id=?")
             .execute(Tuple.of(key.value))
-            .onSuccess { promise.complete(mapAsTrainer(it.first())) }
-            .onFailure { promise.fail(it) }
+            .map { mapAsTrainer(it.first()) }
+            .onSuccess(promise::complete)
+            .onFailure(promise::fail)
         return promise.future()
     }
 
@@ -31,12 +31,13 @@ object TrainerRepository: Repository<Snowflake, Trainer> {
         Database
             .preparedQuery(
                 """
-                    INSERT INTO trainer (id, snowflake, pokedollar) VALUES (?, ?, ?)
-                    ON DUPLICATE KEY UPDATE id=VALUES(id), snowflake=VALUES(snowflake), pokedollar=VALUES(pokedollar)
+                    INSERT INTO trainer (id, pokedollar) VALUES (?, ?, ?)
+                    ON DUPLICATE KEY UPDATE pokedollar=VALUES(pokedollar)
                 """.trimIndent()
-            ).execute(mapAsTuple(value))
+            )
+            .execute(mapAsTuple(value))
             .onSuccess { promise.complete(value) }
-            .onFailure { promise.fail(it) }
+            .onFailure(promise::fail)
         return promise.future()
     }
 
@@ -44,25 +45,21 @@ object TrainerRepository: Repository<Snowflake, Trainer> {
         val promise = Promise.promise<Trainer>()
         Database
             .preparedQuery("DELETE FROM trainer WHERE id=?")
-            .execute(Tuple.of(value.id.snowflake))
+            .execute(Tuple.of(value.id))
             .onSuccess { promise.complete(value) }
-            .onFailure { promise.fail(it) }
+            .onFailure(promise::fail)
         return promise.future()
     }
 
     private fun mapAsTuple(trainer: Trainer) =
         Tuple.of(
-            trainer.id.value,
-            trainer.id.snowflake,
+            trainer.id,
             trainer.pokedollar
         )
 
     private fun mapAsTrainer(row: Row) =
         Trainer(
-            id = TrainerId(
-                value = row.getInteger("id"),
-                snowflake = snowflakeOf(row.getLong("snowflake"))
-            ),
+            id = snowflakeOf(row.getLong("snowflake")),
             bag = Bag(),
             pokedollar = Pokedollar(
                 amount = row.getInteger("pokedollar")

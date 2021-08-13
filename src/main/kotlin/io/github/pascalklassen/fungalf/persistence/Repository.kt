@@ -10,7 +10,7 @@ interface Repository<K, V> {
     fun save(value: V): Future<V>
 
     fun saveAll(values: Collection<V>): CompositeFuture {
-        return CompositeFuture.all(values.map { save(it) })
+        return CompositeFuture.all(values.map(::save))
     }
 
     fun delete(value: V): Future<V>

@@ -23,13 +23,14 @@ object TrainerRegistry: Closable {
     }
 
     fun remove(trainer: Trainer) {
-        cache.invalidate(trainer.id.snowflake)
+        cache.invalidate(trainer.id)
         TrainerRepository.delete(trainer)
     }
 
     operator fun contains(id: Snowflake) = id in cache
 
     override fun close() {
+        TrainerRepository.saveAll(cache.asMap().values)
         cache.cleanUp()
     }
 }

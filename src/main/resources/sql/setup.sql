@@ -5,14 +5,14 @@ CREATE DATABASE IF NOT EXISTS fungalf_the_grey DEFAULT CHARSET utf8;
 USE fungalf_the_grey;
 
 CREATE TABLE IF NOT EXISTS trainer(
-    id INT PRIMARY KEY NOT NULL,
-    snowflake LONG NOT NULL,
+    -- Snowflake of the discord user
+    id LONG NOT NULL PRIMARY KEY,
     pokedollar INT NOT NULL
 )ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS pokemon(
     id INT PRIMARY KEY NOT NULL,
-    trainerId INT NOT NULL,
+    trainerId LONG NOT NULL,
     xp INT NOT NULL,
     dateCaught DATETIME NOT NULL,
     FOREIGN KEY (trainerId) REFERENCES trainer(id)
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS pokemon(
 )ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS trainer_has_pokemon(
-    trainerId INT NOT NULL,
+    trainerId LONG NOT NULL,
     pokemonId INT NOT NULL,
     PRIMARY KEY (trainerId, pokemonId),
     FOREIGN KEY (trainerId) REFERENCES trainer(id)
@@ -33,10 +33,10 @@ CREATE TABLE IF NOT EXISTS trainer_has_pokemon(
 )ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS trainer_has_item(
-    trainerId INT NOT NULL,
-    itemName VARCHAR(255) NOT NULL,
-    itemAmount INT NOT NULL,
-    PRIMARY KEY (trainerId, itemName),
+    trainerId LONG NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    amount INT NOT NULL,
+    PRIMARY KEY (trainerId, name),
     FOREIGN KEY (trainerId) REFERENCES trainer(id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
