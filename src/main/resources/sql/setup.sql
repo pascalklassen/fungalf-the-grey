@@ -20,6 +20,11 @@ CREATE TABLE IF NOT EXISTS pokemon(
         ON DELETE CASCADE
 )ENGINE=InnoDB;
 
+CREATE TABLE IF NOT EXISTS item(
+    id INT PRIMARY KEY NOT NULL,
+    name VARCHAR(255) NOT NULL
+)ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS trainer_has_pokemon(
     trainerId LONG NOT NULL,
     pokemonId INT NOT NULL,
@@ -34,10 +39,13 @@ CREATE TABLE IF NOT EXISTS trainer_has_pokemon(
 
 CREATE TABLE IF NOT EXISTS trainer_has_item(
     trainerId LONG NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    itemId INT NOT NULL,
     amount INT NOT NULL,
-    PRIMARY KEY (trainerId, name),
+    PRIMARY KEY (trainerId, itemId),
     FOREIGN KEY (trainerId) REFERENCES trainer(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    FOREIGN KEY (itemId) REFERENCES item(id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
 )ENGINE=InnoDB;

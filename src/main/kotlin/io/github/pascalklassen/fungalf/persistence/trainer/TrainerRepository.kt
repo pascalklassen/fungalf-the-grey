@@ -45,7 +45,7 @@ object TrainerRepository: Repository<Snowflake, Trainer> {
         val promise = Promise.promise<Trainer>()
         Database
             .preparedQuery("DELETE FROM trainer WHERE id=?")
-            .execute(Tuple.of(value.id))
+            .execute(Tuple.of(value.id.value))
             .onSuccess { promise.complete(value) }
             .onFailure(promise::fail)
         return promise.future()
@@ -53,7 +53,7 @@ object TrainerRepository: Repository<Snowflake, Trainer> {
 
     private fun mapAsTuple(trainer: Trainer) =
         Tuple.of(
-            trainer.id,
+            trainer.id.value,
             trainer.pokedollar
         )
 
