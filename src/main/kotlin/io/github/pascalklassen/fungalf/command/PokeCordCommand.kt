@@ -84,7 +84,6 @@ class PokeCordCommand: Command(
     }
 
     private fun help(context: Context) {
-        TODO()
     }
 
     private fun claim(context: Context) {

@@ -19,12 +19,12 @@ const val PREFIX = "?"
 
 private val LOGGER = KotlinLogging.logger {}
 
-class FungalfBot: ListenerAdapter() {
+object FungalfBot: ListenerAdapter() {
 
     private val config = Config { addSpec(BotSpec) }.from.env()
 
     private val jda = JDABuilder
-        .createDefault(config[token])
+        .createDefault(config[BotSpec.token])
         .build()
 
     private val command = PokeCordCommand()
@@ -68,7 +68,7 @@ class FungalfBot: ListenerAdapter() {
             .split(" ")
             .toTypedArray()
 
-    companion object BotSpec: ConfigSpec("BOT") {
+    object BotSpec: ConfigSpec("BOT") {
         val token by required<String>(name = "TOKEN")
     }
 }

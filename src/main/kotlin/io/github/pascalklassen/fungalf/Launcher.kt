@@ -1,7 +1,7 @@
 package io.github.pascalklassen.fungalf
 
 fun main() {
-    FungalfBot().also {
+    FungalfBot.also {
         it.start()
         Runtime
             .getRuntime()
