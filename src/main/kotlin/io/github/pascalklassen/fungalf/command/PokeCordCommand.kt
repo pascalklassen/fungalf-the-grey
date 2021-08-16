@@ -2,6 +2,7 @@ package io.github.pascalklassen.fungalf.command
 
 import com.google.common.base.CaseFormat
 import io.github.pascalklassen.fungalf.PREFIX
+import io.github.pascalklassen.fungalf.createMessage
 import io.github.pascalklassen.fungalf.persistence.trainer.TrainerRegistry
 import io.github.pascalklassen.fungalf.pokecord.trainer.Trainer
 import io.github.pascalklassen.fungalf.pokecord.trainer.snowflakeOf
@@ -84,6 +85,58 @@ class PokeCordCommand: Command(
     }
 
     private fun help(context: Context) {
+        val channel = context.event.channel
+        val message = createMessage {
+            embed {
+                author {
+                    name = "Pascal Klaßen"
+                    url = "https://github.com/pascalklassen"
+                    icon = "https://avatars.githubusercontent.com/u/33351778?v=4"
+                }
+
+                title {
+                    +"My Title"
+                    url = "https://dict.cc"
+                }
+
+                +"""
+                    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut 
+                    labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores
+                     et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. 
+                     Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut 
+                     labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo 
+                     dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit 
+                     amet.
+                """.trimIndent()
+                image = "https://avatars.githubusercontent.com/u/33351778?v=4"
+                color = Color.CYAN
+                thumbnail = "https://avatars.githubusercontent.com/u/33351778?v=4"
+
+                field {
+                    name = "This is a Field!"
+                    +"This is some Value"
+                }
+
+                +"Some more description"
+
+                repeat(3) {
+                    field {
+                        name = "This is a Field!"
+                        +"This is some Value"
+                        inline = true
+                    }
+                }
+
+                footer {
+                    +"Some Footer Text"
+                    icon = "https://avatars.githubusercontent.com/u/33351778?v=4"
+                }
+
+                timestamp = Instant.now()
+            }
+        }
+
+        channel.sendMessage(message).queue()
     }
 
     private fun claim(context: Context) {
