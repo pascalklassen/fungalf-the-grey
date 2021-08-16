@@ -9,6 +9,7 @@ import io.github.pascalklassen.fungalf.pokecord.trainer.Trainer
 import io.github.pascalklassen.fungalf.pokecord.trainer.snowflakeOf
 import io.github.pascalklassen.pokefuture.pokemon.Pokemon
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.interactions.components.ButtonStyle
 import java.awt.Color
 import java.time.Instant
 
@@ -88,6 +89,35 @@ class PokeCordCommand: Command(
     private fun help(context: Context) {
         val channel = context.event.channel
         val message = createMessage(TEST_TEMPLATE) {
+            actionRow {
+
+                button("accept-terms") {
+                    label = "Accept"
+                    style = ButtonStyle.SUCCESS
+                    onClick = {
+                        println("called...")
+                        it.reply("You have accepted the terms!")
+                            .setEphemeral(true)
+                            .queue()
+                        it.message
+                            ?.editMessageComponents(listOf())
+                            ?.queue()
+                    }
+                }
+
+                button("decline-terms") {
+                    label = "Decline"
+                    style = ButtonStyle.DANGER
+                    onClick = {
+                        it.reply("You have declined the terms!")
+                            .setEphemeral(true)
+                            .queue()
+                        it.message
+                            ?.editMessageComponents(listOf())
+                            ?.queue()
+                    }
+                }
+            }
         }
 
         channel.sendMessage(message).queue()
