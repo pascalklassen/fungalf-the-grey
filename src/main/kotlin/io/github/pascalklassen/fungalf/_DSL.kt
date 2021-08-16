@@ -1,28 +1,40 @@
+@file:Suppress("unused")
+
 package io.github.pascalklassen.fungalf
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.MessageBuilder
+import net.dv8tion.jda.api.entities.MessageEmbed
 import java.awt.Color
-import java.time.Instant
 import java.time.temporal.TemporalAccessor
 
 @DslMarker
 annotation class MessageDsl
 
 @MessageDsl
-class MessageBuilderDsl: MessageBuilder() {
+open class MessageBuilderDsl(template: MessageBuilderDsl? = null): MessageBuilder(template) {
+    private val embedList = mutableListOf<MessageEmbed>()
 
     operator fun String.unaryPlus() {
-        append(this)
+        append(this + "\n")
     }
 
-    fun embed(block: EmbedBuilderDsl.() -> Unit) {
-        EmbedBuilderDsl().apply(block).build().also { setEmbeds(it) }
+    fun embed(template: EmbedBuilderDsl? = null, block: EmbedBuilderDsl.() -> Unit) {
+        buildEmbed(template, block).build().also { embeds.add(it) }
+    }
+
+    fun assemble() {
+        setEmbeds(embedList.apply { addAll(embeds) })
     }
 }
 
 @MessageDsl
-class EmbedBuilderDsl: EmbedBuilder() {
+open class EmbedBuilderDsl(template: EmbedBuilderDsl? = null): EmbedBuilder(template) {
+    var description: String? = null
+        set(value) {
+            setDescription(value)
+        }
+
     var image: String? = null
         set(value) {
             setImage(value)
@@ -97,5 +109,14 @@ class EmbedBuilderDsl: EmbedBuilder() {
     }
 }
 
-fun createMessage(block: MessageBuilderDsl.() -> Unit) =
-    MessageBuilderDsl().apply(block).build()
+fun buildEmbed(template: EmbedBuilderDsl? = null, block: EmbedBuilderDsl.() -> Unit) =
+    EmbedBuilderDsl(template).apply(block)
+
+fun buildMessage(template: MessageBuilderDsl? = null, block: MessageBuilderDsl.() -> Unit) =
+    MessageBuilderDsl(template).apply {
+        block()
+        assemble()
+    }
+
+fun createMessage(template: MessageBuilderDsl? = null, block: MessageBuilderDsl.() -> Unit) =
+    buildMessage(template, block).build()
