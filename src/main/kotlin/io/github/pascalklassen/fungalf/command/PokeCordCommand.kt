@@ -2,13 +2,14 @@ package io.github.pascalklassen.fungalf.command
 
 import com.google.common.base.CaseFormat
 import io.github.pascalklassen.fungalf.PREFIX
-import io.github.pascalklassen.fungalf.TEST_TEMPLATE
 import io.github.pascalklassen.fungalf.createMessage
 import io.github.pascalklassen.fungalf.persistence.trainer.TrainerRegistry
 import io.github.pascalklassen.fungalf.pokecord.trainer.Trainer
 import io.github.pascalklassen.fungalf.pokecord.trainer.snowflakeOf
+import io.github.pascalklassen.fungalf.removeComponents
 import io.github.pascalklassen.pokefuture.pokemon.Pokemon
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.Emoji
 import net.dv8tion.jda.api.interactions.components.ButtonStyle
 import java.awt.Color
 import java.time.Instant
@@ -88,33 +89,57 @@ class PokeCordCommand: Command(
 
     private fun help(context: Context) {
         val channel = context.event.channel
-        val message = createMessage(TEST_TEMPLATE) {
-            actionRow {
 
+        val message = createMessage {
+            embed {
+                title { +"Terms and Conditions" }
+                +"In order to use this command, you need to accept the __Terms and Conditions__!"
+            }
+
+            actionRow {
                 button("accept-terms") {
                     label = "Accept"
-                    style = ButtonStyle.SUCCESS
+                    emoji = Emoji.fromUnicode("✅")
+                    style = ButtonStyle.SECONDARY
                     onClick = {
-                        println("called...")
-                        it.reply("You have accepted the terms!")
+                        it.message?.removeComponents()
+                        it.reply("You have accepted the __Terms and Conditions__!")
                             .setEphemeral(true)
                             .queue()
-                        it.message
-                            ?.editMessageComponents(listOf())
-                            ?.queue()
                     }
                 }
 
                 button("decline-terms") {
                     label = "Decline"
-                    style = ButtonStyle.DANGER
+                    emoji = Emoji.fromUnicode("❎")
+                    style = ButtonStyle.SECONDARY
                     onClick = {
-                        it.reply("You have declined the terms!")
+                        it.message?.removeComponents()
+                        it.reply("You have declined the __Terms and Conditions__!")
                             .setEphemeral(true)
                             .queue()
-                        it.message
-                            ?.editMessageComponents(listOf())
-                            ?.queue()
+                    }
+                }
+            }
+
+            actionRow {
+                selectMenu("choose-class") {
+                    placeholder = "Please select a class"
+                    range = 1..2
+
+                    option("fire-mage", "Fire Mage") {
+                        emoji = Emoji.fromUnicode("\uD83D\uDE48")
+                        description = "This is a description!"
+                    }
+
+                    option("frost-mage", "Frost Mage") {
+                        emoji = Emoji.fromUnicode("\uD83D\uDE49")
+                        description = "This is a description!"
+                    }
+
+                    option("arcane-mage", "Arcane Mage") {
+                        emoji = Emoji.fromUnicode("\uD83D\uDE4A")
+                        description = "This is a description!"
                     }
                 }
             }

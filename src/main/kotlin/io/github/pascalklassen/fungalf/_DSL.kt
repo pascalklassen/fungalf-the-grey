@@ -9,6 +9,8 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.components.*
+import net.dv8tion.jda.api.interactions.components.selections.SelectOption
+import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu
 import java.awt.Color
 import java.time.temporal.TemporalAccessor
 
@@ -63,7 +65,7 @@ class MessageBuilderDsl(template: MessageBuilderDsl? = null): MessageBuilder(tem
                     button = button.withUrl(url)
                 }
 
-                ButtonHandler.addHandler(it.id, it.onClick)
+                ButtonHandlerList.addHandler(it.id, it.onClick)
 
                 components.add(button)
             }
@@ -79,6 +81,46 @@ class MessageBuilderDsl(template: MessageBuilderDsl? = null): MessageBuilder(tem
             var disabled: Boolean = false,
             var onClick: ClickHandler = {}
         )
+
+        fun selectMenu(id: String, block: SelectMenuBuilderDsl.() -> Unit) {
+            SelectMenuBuilderDsl(id).apply(block).also {
+                components.add(
+                    SelectionMenu.create(id)
+                        .setPlaceholder(it.placeholder)
+                        .setRequiredRange(it.range.first, it.range.last)
+                        .addOptions(it.options)
+                        .build()
+                )
+            }
+        }
+
+        @MessageDsl
+        class SelectMenuBuilderDsl(
+            val id: String,
+            var placeholder: String? = null,
+            var range: IntRange = 1..1) {
+            val options = mutableListOf<SelectOption>()
+
+            fun option(value: String, label: String, block: SelectOptionBuilderDsl.() -> Unit) {
+                SelectOptionBuilderDsl(value, label).apply(block).also {
+                    options.add(
+                        SelectOption.of(label, value)
+                            .withEmoji(it.emoji)
+                            .withDefault(it.default)
+                            .withDescription(it.description)
+                    )
+                }
+            }
+
+            @MessageDsl
+            class SelectOptionBuilderDsl(
+                val value: String,
+                val label: String,
+                var description: String? = null,
+                var default: Boolean = false,
+                var emoji: Emoji? = null
+            )
+        }
     }
 
     fun assemble() {
@@ -180,8 +222,12 @@ fun buildMessage(template: MessageBuilderDsl? = null, block: MessageBuilderDsl.(
 fun createMessage(template: MessageBuilderDsl? = null, block: MessageBuilderDsl.() -> Unit) =
     buildMessage(template, block).build()
 
-object ButtonHandler: ListenerAdapter() {
+object ButtonHandlerList: ListenerAdapter() {
     private val handlers = mutableMapOf<String, ClickHandler>()
+
+    fun ButtonClickEvent.removeHandler() {
+        handlers.remove(componentId)
+    }
 
     fun addHandler(id: String, handler: ClickHandler) {
         handlers[id] = handler

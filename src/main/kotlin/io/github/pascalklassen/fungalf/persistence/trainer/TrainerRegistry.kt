@@ -2,8 +2,8 @@ package io.github.pascalklassen.fungalf.persistence.trainer
 
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
-import io.github.pascalklassen.fungalf.extension.contains
-import io.github.pascalklassen.fungalf.extension.get
+import io.github.pascalklassen.fungalf.contains
+import io.github.pascalklassen.fungalf.get
 import io.github.pascalklassen.fungalf.persistence.Closable
 import io.github.pascalklassen.fungalf.pokecord.trainer.Snowflake
 import io.github.pascalklassen.fungalf.pokecord.trainer.Trainer

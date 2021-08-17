@@ -1,9 +1,12 @@
-package io.github.pascalklassen.fungalf.extension
+package io.github.pascalklassen.fungalf
 
 import com.google.common.cache.Cache
 import io.vertx.core.Future
 import io.vertx.core.Promise
+import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.requests.RestAction
+
+fun Message.removeComponents() = editMessageComponents(listOf()).queue()
 
 fun <T> RestAction<T>.future(): Future<T> {
     val promise = Promise.promise<T>()

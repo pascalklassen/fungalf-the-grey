@@ -31,7 +31,7 @@ object FungalfBot: ListenerAdapter() {
 
     fun start() {
         LOGGER.info { "$BOT_NAME is starting!" }
-        jda.addEventListener(ButtonHandler)
+        jda.addEventListener(ButtonHandlerList)
         jda.addEventListener(this)
         Database.init()
     }
