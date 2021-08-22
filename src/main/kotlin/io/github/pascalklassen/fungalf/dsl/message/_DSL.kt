@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package io.github.pascalklassen.fungalf
+package io.github.pascalklassen.fungalf.dsl.message
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.MessageBuilder

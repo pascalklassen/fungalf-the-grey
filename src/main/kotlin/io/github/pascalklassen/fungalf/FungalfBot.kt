@@ -4,6 +4,7 @@ import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.ConfigSpec
 import io.github.pascalklassen.fungalf.command.Context
 import io.github.pascalklassen.fungalf.command.PokeCordCommand
+import io.github.pascalklassen.fungalf.dsl.message.ButtonHandlerList
 import io.github.pascalklassen.fungalf.persistence.Database
 import io.github.pascalklassen.fungalf.persistence.trainer.TrainerRegistry
 import mu.KotlinLogging

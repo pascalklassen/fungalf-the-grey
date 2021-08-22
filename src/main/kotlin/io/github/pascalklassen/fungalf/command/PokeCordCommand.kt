@@ -2,7 +2,7 @@ package io.github.pascalklassen.fungalf.command
 
 import com.google.common.base.CaseFormat
 import io.github.pascalklassen.fungalf.PREFIX
-import io.github.pascalklassen.fungalf.createMessage
+import io.github.pascalklassen.fungalf.dsl.message.createMessage
 import io.github.pascalklassen.fungalf.persistence.trainer.TrainerRegistry
 import io.github.pascalklassen.fungalf.pokecord.trainer.Trainer
 import io.github.pascalklassen.fungalf.pokecord.trainer.snowflakeOf
