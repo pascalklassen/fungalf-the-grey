@@ -5,8 +5,10 @@ import com.uchuhimo.konf.ConfigSpec
 import io.github.pascalklassen.fungalf.command.Context
 import io.github.pascalklassen.fungalf.command.PokeCordCommand
 import io.github.pascalklassen.fungalf.dsl.message.ButtonHandlerList
+import io.github.pascalklassen.fungalf.dsl.message.createMessage
 import io.github.pascalklassen.fungalf.persistence.Database
 import io.github.pascalklassen.fungalf.persistence.trainer.TrainerRegistry
+import io.github.pascalklassen.pokefuture.pokemon.Pokemon
 import mu.KotlinLogging
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDABuilder
@@ -35,6 +37,9 @@ object FungalfBot: ListenerAdapter() {
         jda.addEventListener(ButtonHandlerList)
         jda.addEventListener(this)
         Database.init()
+        Pokemon.fetch("1")
+            .onSuccess { LOGGER.info { it.name } }
+            .onFailure { LOGGER.error { it.message } }
     }
 
     fun stop() {
@@ -53,14 +58,15 @@ object FungalfBot: ListenerAdapter() {
         try {
             command.execute(Context(event, tokens.copyOfRange(1, tokens.size), jda))
         } catch (ex: IllegalArgumentException) {
-            event.channel.sendMessageEmbeds(
-                with (EmbedBuilder()) {
-                    setTitle("Ungültige Eingabe")
-                    setDescription(ex.message)
-                    setColor(Color.RED)
-                    return@with build()
+            val message = createMessage {
+                embed {
+                    title { +"Ungültige Eingabe" }
+                    +ex.message!!
+                    color = Color.RED
                 }
-            ).queue()
+            }
+
+            event.channel.sendMessage(message)
         }
     }
 
