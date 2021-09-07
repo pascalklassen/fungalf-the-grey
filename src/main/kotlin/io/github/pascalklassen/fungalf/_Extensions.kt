@@ -4,17 +4,8 @@ import com.google.common.cache.Cache
 import io.vertx.core.Future
 import io.vertx.core.Promise
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.requests.RestAction
 
-fun Message.removeComponents() = editMessageComponents(listOf()).queue()
-
-fun <T> RestAction<T>.future(): Future<T> {
-    val promise = Promise.promise<T>()
-
-    queue({ promise.complete(it) }, { promise.fail(it) })
-
-    return promise.future()
-}
+fun Message.deleteComponents() = editMessageComponents(listOf()).queue()
 
 operator fun <K: Any, V> Cache<K, V>.contains(key: K) = asMap().containsKey(key)
 

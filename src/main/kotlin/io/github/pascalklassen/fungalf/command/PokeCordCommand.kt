@@ -6,7 +6,7 @@ import io.github.pascalklassen.fungalf.dsl.message.createMessage
 import io.github.pascalklassen.fungalf.persistence.trainer.TrainerRegistry
 import io.github.pascalklassen.fungalf.pokecord.trainer.Trainer
 import io.github.pascalklassen.fungalf.pokecord.trainer.snowflakeOf
-import io.github.pascalklassen.fungalf.removeComponents
+import io.github.pascalklassen.fungalf.deleteComponents
 import io.github.pascalklassen.pokefuture.pokemon.Pokemon
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Emoji
@@ -33,8 +33,7 @@ class PokeCordCommand: Command(
 
         val newContext = Context(
             context.event,
-            context.args.copyOfRange(1, context.args.size),
-            context.jda
+            context.args.drop(1),
         )
 
         when (context.args.first()) {
@@ -59,7 +58,6 @@ class PokeCordCommand: Command(
 
     private fun sendWelcomeMessage(context: Context, trainer: Trainer) {
         val author = context.event.author
-        context.respond(
             with (EmbedBuilder()) {
                 setTitle("Willkommen ${author.name}! | Trainer No. ${trainer.id}")
                 setColor(Color.RED)
@@ -84,7 +82,6 @@ class PokeCordCommand: Command(
                 )
                 return@with build()
             }
-        ).queue()
     }
 
     private fun help(context: Context) {
@@ -102,7 +99,7 @@ class PokeCordCommand: Command(
                     emoji = Emoji.fromUnicode("✅")
                     style = ButtonStyle.SECONDARY
                     onClick = {
-                        it.message?.removeComponents()
+                        it.message?.deleteComponents()
                         it.reply("You have accepted the __Terms and Conditions__!")
                             .setEphemeral(true)
                             .queue()
@@ -114,7 +111,7 @@ class PokeCordCommand: Command(
                     emoji = Emoji.fromUnicode("❎")
                     style = ButtonStyle.SECONDARY
                     onClick = {
-                        it.message?.removeComponents()
+                        it.message?.deleteComponents()
                         it.reply("You have declined the __Terms and Conditions__!")
                             .setEphemeral(true)
                             .queue()
@@ -161,26 +158,24 @@ class PokeCordCommand: Command(
     }
 
     private fun claimPokemon(pokemon: Pokemon, context: Context) {
-        context.respond(
-            with (EmbedBuilder()) {
-                setTitle("#${pokemon.id.toString().padStart(3, '0')} | Level 1 ${pokemon.name.toCamel()}")
-                setDescription(
-                    """
-                        Glückwunsch, du hast dein starter Pokémon erhalten!
-                        Um den nächsten Schritt zu machen, kannst du eins der folgenden starter Gebiete
-                        besuchen um dein Pokémon zu trainieren.
-                        
-                        > **Wähle ein starter Gebiet aus**
-                        Gib dazu `${PREFIX}$name walk [area]` ein um eins der oben aufgelisteten Gebiete zu betreten.
-                    """.trimIndent()
-                )
-                setColor(Color.RED)
-                setThumbnail("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png")
-                setFooter("Gefangen am")
-                setTimestamp(Instant.now())
-                return@with build()
-            }
-        ).queue()
+        with (EmbedBuilder()) {
+            setTitle("#${pokemon.id.toString().padStart(3, '0')} | Level 1 ${pokemon.name.toCamel()}")
+            setDescription(
+                """
+                    Glückwunsch, du hast dein starter Pokémon erhalten!
+                    Um den nächsten Schritt zu machen, kannst du eins der folgenden starter Gebiete
+                    besuchen um dein Pokémon zu trainieren.
+                    
+                    > **Wähle ein starter Gebiet aus**
+                    Gib dazu `${PREFIX}$name walk [area]` ein um eins der oben aufgelisteten Gebiete zu betreten.
+                """.trimIndent()
+            )
+            setColor(Color.RED)
+            setThumbnail("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png")
+            setFooter("Gefangen am")
+            setTimestamp(Instant.now())
+            return@with build()
+        }
     }
 
     private fun String.toCamel() = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, this)
