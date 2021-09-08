@@ -3,6 +3,7 @@ package io.github.pascalklassen.fungalf
 import com.kotlindiscord.kord.extensions.ExtensibleBot
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.ConfigSpec
+import io.github.pascalklassen.fungalf.extensions.PokeCordExtension
 import io.github.pascalklassen.fungalf.extensions.TestExtension
 
 object BotSpec: ConfigSpec("BOT") {
@@ -15,14 +16,12 @@ suspend fun main() {
     val bot = ExtensibleBot(config[BotSpec.token]) {
         extensions {
             add(::TestExtension)
+            add(::PokeCordExtension)
         }
 
         chatCommands {
             defaultPrefix = "?"
-
-            prefix { default ->
-                default
-            }
+            enabled = true
         }
 
         presence {
