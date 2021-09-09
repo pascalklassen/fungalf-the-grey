@@ -3,9 +3,6 @@ package io.github.pascalklassen.fungalf
 import com.google.common.cache.Cache
 import io.vertx.core.Future
 import io.vertx.core.Promise
-import net.dv8tion.jda.api.entities.Message
-
-fun Message.deleteComponents() = editMessageComponents(listOf()).queue()
 
 operator fun <K: Any, V> Cache<K, V>.contains(key: K) = asMap().containsKey(key)
 
