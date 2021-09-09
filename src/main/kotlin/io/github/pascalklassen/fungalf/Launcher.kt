@@ -1,6 +1,7 @@
 package io.github.pascalklassen.fungalf
 
 import com.kotlindiscord.kord.extensions.ExtensibleBot
+import com.kotlindiscord.kord.extensions.i18n.SupportedLocales
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.ConfigSpec
 import com.zaxxer.hikari.HikariConfig
@@ -9,7 +10,6 @@ import io.github.pascalklassen.fungalf.extensions.PokeCordExtension
 import io.github.pascalklassen.fungalf.extensions.TestExtension
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.Database
-import java.util.*
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -28,8 +28,6 @@ object DatabaseSpec: ConfigSpec("MYSQL") {
 }
 
 suspend fun main() {
-    Locale.setDefault(Locale.GERMAN)
-
     val config = Config {
         addSpec(BotSpec)
         addSpec(DatabaseSpec)
@@ -56,6 +54,10 @@ suspend fun main() {
         extensions {
             add(::TestExtension)
             add(::PokeCordExtension)
+        }
+
+        i18n {
+            defaultLocale = SupportedLocales.GERMAN
         }
 
         chatCommands {

@@ -10,6 +10,8 @@ class PokeCordExtension: Extension() {
     override val name = "pokecord"
     override val bundle = "fungalf.strings"
 
+    private val validStarter = listOf("bisasam", "glumanda", "shiggy")
+
     override suspend fun setup() {
         chatGroupCommand {
             name = "extensions.pokecord.commandName"
@@ -21,7 +23,15 @@ class PokeCordExtension: Extension() {
                 description = "extensions.pokecord.claim.commandDescription"
 
                 action {
-                    message.respond("Du doof!")
+                    if (arguments.name.lowercase() !in validStarter) {
+                        message.respond {
+                            content = "Bitte wähle ein gültiges Starter-Pokémon aus der Liste aus:\n"
+                            validStarter.forEach { content += "**» ${it}**\n" }
+                        }
+                        return@action
+                    }
+
+                    message.respond("Du hast ein **${arguments.name}** gefangen!")
                 }
             }
         }
