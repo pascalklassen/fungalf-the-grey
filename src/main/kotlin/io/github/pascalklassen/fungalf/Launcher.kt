@@ -8,6 +8,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.github.pascalklassen.fungalf.extensions.PokeCordExtension
 import io.github.pascalklassen.fungalf.extensions.TestExtension
+import io.github.pascalklassen.pokefuture.PokemonService
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.Database
 
@@ -28,6 +29,8 @@ object DatabaseSpec: ConfigSpec("MYSQL") {
 }
 
 suspend fun main() {
+    PokemonService.disableCaching()
+
     val config = Config {
         addSpec(BotSpec)
         addSpec(DatabaseSpec)

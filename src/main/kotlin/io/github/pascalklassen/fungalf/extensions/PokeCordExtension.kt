@@ -5,12 +5,18 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.chatGroupCommand
 import com.kotlindiscord.kord.extensions.utils.respond
+import com.kotlindiscord.kord.extensions.utils.runSuspended
 import dev.kord.rest.builder.message.create.embed
 import io.vertx.kotlin.coroutines.await
 import mu.KotlinLogging
+import org.jetbrains.exposed.dao.IntEntity
+import org.jetbrains.exposed.dao.IntEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.lang.Exception
+import java.util.*
 import io.github.pascalklassen.pokefuture.pokemon.Pokemon as PokemonData
 
 private val LOGGER = KotlinLogging.logger {}
@@ -24,7 +30,7 @@ class PokeCordExtension: Extension() {
     override suspend fun setup() {
         transaction {
             addLogger(StdOutSqlLogger)
-            SchemaUtils.create(Pokemon)
+            SchemaUtils.create(PokemonTable, PokemonNameTable)
         }
 
         chatGroupCommand {
@@ -37,46 +43,19 @@ class PokeCordExtension: Extension() {
                 description = "extensions.pokecord.claim.commandDescription"
 
                 action {
-                    val pokemonName = arguments.name.lowercase()
+                    val pokemon = Pokemon.findByName(arguments.name.lowercase())
 
-                    var result = transaction { Pokemon.select { Pokemon.name eq pokemonName }.singleOrNull() }
-
-                    if (result == null) {
-                        LOGGER.debug { "Could not find Pokémon '$pokemonName' in Database!" }
-
-                        try {
-                            val data = PokemonData.fetch(pokemonName).await()
-
-                            result = transaction {
-                                val id = Pokemon.insert {
-                                    it[id] = data.id
-                                    it[name] = data.name
-                                    it[baseExperience] = data.baseExperience
-                                    it[weight] = data.weight
-                                    it[height] = data.height
-                                    it[maleSprite] = data.sprites.frontDefault
-                                    it[femaleSprite] = data.sprites.frontFemale
-                                    it[artwork] = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${data.id}.png"
-                                } get Pokemon.id
-
-                                Pokemon.select { Pokemon.id eq id }.single()
-                            }
-                        } catch (ex: Exception) {
-                            LOGGER.error { "Something went wrong while retrieving Pokémon Data for '$pokemonName'." }
-                        }
-                    }
-
-                    result?.let {
+                    with(pokemon) {
                         message.respond {
                             embed {
-                                title = "${it[Pokemon.name]} #${it[Pokemon.id]}"
-                                image = it[Pokemon.artwork]
+                                title = "$name #${id}"
+                                image = artwork
 
                                 description = """
-                                    Gewicht: ${it[Pokemon.weight] / 10}kg
-                                    Höhe:    ${it[Pokemon.height] / 10}m
+                                    Gewicht: ${weight / 10f}kg
+                                    Höhe:    ${height / 10f}m
                                     
-                                    Basis-Erfahrung: ${it[Pokemon.baseExperience]}-XP
+                                    Basis-Erfahrung: $baseExperience-XP
                                 """.trimIndent()
                             }
                         }
@@ -94,8 +73,7 @@ class PokeCordExtension: Extension() {
     }
 }
 
-object Pokemon: Table() {
-    val id = integer("id")
+object PokemonTable: IntIdTable() {
     val name = varchar("name", 255)
     val baseExperience = integer("base_experience")
     val weight = integer("weight")
@@ -107,13 +85,59 @@ object Pokemon: Table() {
     override val primaryKey = PrimaryKey(id)
 }
 
+class Pokemon(id: EntityID<Int>): IntEntity(id) {
+    companion object: IntEntityClass<Pokemon>(PokemonTable) {
+
+        suspend fun findByName(pokemonName: String) = newSuspendedTransaction {
+            find { PokemonTable.name eq pokemonName }.firstOrNull() ?: runSuspended {
+                val data = PokemonData.fetch(pokemonName).await()
+                val species = data.species.fetch().await()
+                val germanName = species.names.first { it.language.name == Locale.GERMAN.country.lowercase() }.name
+
+                Pokemon.new(data.id) {
+                    name = data.name
+                    baseExperience = data.baseExperience
+                    weight = data.weight
+                    height = data.height
+                    maleSprite = data.sprites.frontDefault
+                    femaleSprite = data.sprites.frontFemale
+                    artwork = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png"
+                }.also { entity ->
+                    PokemonNameTable.insert {
+                        it[name] = entity.name
+                        it[pokemon] = entity.id
+                    }
+                    PokemonNameTable.insert {
+                        it[name] = germanName
+                        it[pokemon] = entity.id
+                    }
+                }
+            }
+        }
+    }
+
+    var name by PokemonTable.name
+    var baseExperience by PokemonTable.baseExperience
+    var weight by PokemonTable.weight
+    var height by PokemonTable.height
+    var maleSprite by PokemonTable.maleSprite
+    var femaleSprite by PokemonTable.femaleSprite
+    var artwork by PokemonTable.artwork
+}
+
+object PokemonNameTable: Table() {
+    val name = varchar("name", 255)
+    val pokemon = reference("pokemon", PokemonTable)
+    override val primaryKey = PrimaryKey(name, pokemon)
+}
+
 object Trainers: Table() {
     val id = integer("id")
     override val primaryKey = PrimaryKey(id)
 }
 
 object PokemonStats: Table() {
-    val pokemonId = Pokemon.id
+    val pokemonId = PokemonTable.id
     val trainerId = Trainers.id
     val experience = integer("experience")
     val rarity = enumeration("rarity", Rarity::class)
