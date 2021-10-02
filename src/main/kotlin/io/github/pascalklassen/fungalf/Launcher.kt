@@ -8,6 +8,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.github.pascalklassen.fungalf.extensions.PokeCordExtension
 import io.github.pascalklassen.fungalf.extensions.TestExtension
+import io.github.pascalklassen.fungalf.extensions.WolframAlphaExtension
 import io.github.pascalklassen.pokefuture.PokemonService
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.Database
@@ -42,7 +43,7 @@ suspend fun main() {
     val dbUsername = config[DatabaseSpec.username]
 
     val hikariConfig = HikariConfig().apply {
-        jdbcUrl = "jdbc:mysql://${dbHost}:${dbPort}/${dbName}?serverTimezone=Europe/Berlin"
+        jdbcUrl = "jdbc:mysql://$dbHost:$dbPort/$dbName?serverTimezone=Europe/Berlin"
         driverClassName = "com.mysql.cj.jdbc.Driver"
         username = dbUsername
         password = config[DatabaseSpec.password]
@@ -50,13 +51,13 @@ suspend fun main() {
         initializationFailTimeout = 30 * 1_000
     }
 
-    val dataSource = HikariDataSource(hikariConfig)
-    Database.connect(dataSource)
+    HikariDataSource(hikariConfig).also(Database::connect)
 
     val bot = ExtensibleBot(config[BotSpec.token]) {
         extensions {
             add(::TestExtension)
             add(::PokeCordExtension)
+            add(::WolframAlphaExtension)
         }
 
         i18n {
@@ -66,6 +67,10 @@ suspend fun main() {
         chatCommands {
             defaultPrefix = "?"
             enabled = true
+        }
+
+        applicationCommands {
+            enabled
         }
 
         presence {

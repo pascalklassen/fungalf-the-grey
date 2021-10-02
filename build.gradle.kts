@@ -35,8 +35,13 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-core:0.34.1")
     implementation("org.jetbrains.exposed:exposed-dao:0.34.1")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.34.1")
+    implementation("org.jetbrains.exposed:exposed-java-time:0.34.1")
     implementation("com.zaxxer:HikariCP:4.0.3")
     implementation("mysql:mysql-connector-java:8.0.19")
+    // -- http client --
+    implementation("io.ktor:ktor-client-core:1.6.4")
+    implementation("io.ktor:ktor-client-jackson:1.6.4")
+    implementation("io.ktor:ktor-client-logging:1.6.4")
     // -- logging --
     implementation("ch.qos.logback:logback-classic:1.2.3")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.10")

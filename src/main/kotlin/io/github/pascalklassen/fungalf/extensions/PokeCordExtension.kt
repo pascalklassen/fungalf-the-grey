@@ -1,5 +1,6 @@
 package io.github.pascalklassen.fungalf.extensions
 
+import com.google.common.base.CaseFormat
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -7,14 +8,15 @@ import com.kotlindiscord.kord.extensions.extensions.chatGroupCommand
 import com.kotlindiscord.kord.extensions.utils.respond
 import com.kotlindiscord.kord.extensions.utils.runSuspended
 import dev.kord.rest.builder.message.create.embed
-import io.github.pascalklassen.pokefuture.utility.common.APIResource
 import io.vertx.kotlin.coroutines.await
 import mu.KotlinLogging
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.`java-time`.timestamp
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import io.github.pascalklassen.pokefuture.pokemon.Pokemon as PokemonData
@@ -25,19 +27,11 @@ class PokeCordExtension: Extension() {
     override val name = "pokecord"
     override val bundle = "fungalf.strings"
 
-    private val validStarter = listOf("bisasam", "glumanda", "shiggy")
-
     override suspend fun setup() {
         transaction {
             addLogger(StdOutSqlLogger)
-            SchemaUtils.create(PokemonTable, PokemonTranslationTable)
+            SchemaUtils.create(PokemonMetaTable, PokemonTranslationTable)
         }
-
-        val list = PokemonData.fetchList(151, 0)
-            .compose { APIResource.composeAll(it) }
-            .await()
-
-        list.forEach { Pokemon.findByName(it.name) }
 
         chatGroupCommand {
             name = "extensions.pokecord.commandName"
@@ -49,12 +43,12 @@ class PokeCordExtension: Extension() {
                 description = "extensions.pokecord.claim.commandDescription"
 
                 action {
-                    val pokemon = Pokemon.findByName(arguments.name.lowercase())
+                    val meta = PokemonMeta.findByName(arguments.name.lowercase())
 
-                    with(pokemon) {
+                    with(meta) {
                         message.respond {
                             embed {
-                                title = "$name #${id}"
+                                title = "${name.camelcase()} #${id.value.pad()}"
                                 image = artwork
 
                                 description = """
@@ -77,9 +71,13 @@ class PokeCordExtension: Extension() {
             "extensions.pokecord.claim.commandArguments.pokemonName"
         )
     }
+
+    private fun String.camelcase() = CaseFormat.LOWER_HYPHEN.to(CaseFormat.UPPER_CAMEL, this)
+
+    private fun Number.pad(length: Int = 4, char: Char = '0') = toString().padStart(length, char)
 }
 
-object PokemonTable: IntIdTable("pokemon") {
+object PokemonMetaTable: IntIdTable("pokemon_meta") {
     val name = varchar("name", 255)
     val baseExperience = integer("base_experience")
     val weight = integer("weight")
@@ -91,24 +89,24 @@ object PokemonTable: IntIdTable("pokemon") {
     override val primaryKey = PrimaryKey(id)
 }
 
-class Pokemon(id: EntityID<Int>): IntEntity(id) {
-    companion object: IntEntityClass<Pokemon>(PokemonTable) {
+class PokemonMeta(id: EntityID<Int>): IntEntity(id) {
+    companion object: IntEntityClass<PokemonMeta>(PokemonMetaTable) {
 
-        suspend fun findByName(name: String) = newSuspendedTransaction {
+        suspend fun findByName(pokemonName: String) = newSuspendedTransaction {
             val pokeId = PokemonTranslationTable
-                .select { PokemonTranslationTable.name eq name }
+                .select { PokemonTranslationTable.name eq pokemonName }
                 .map { it[PokemonTranslationTable.pokemonId] }
                 .map { it.value }
                 .firstOrNull()
 
             pokeId?.let { findById(pokeId) } ?: runSuspended {
-                val data = PokemonData.fetch(name).await()
+                val data = PokemonData.fetch(pokemonName).await()
                 val species = data.species.fetch().await()
                 val translations = species.names
-                    .onEach { LOGGER.info { "Found translation '${it.language.name}': $name -> ${it.name.lowercase()} " } }
+                    .onEach { LOGGER.info { "Found translation '${it.language.name}': $pokemonName -> ${it.name.lowercase()} " } }
 
-                Pokemon.new(data.id) {
-                    this.name = data.name
+                PokemonMeta.new(data.id) {
+                    name = data.name
                     baseExperience = data.baseExperience
                     weight = data.weight
                     height = data.height
@@ -118,7 +116,7 @@ class Pokemon(id: EntityID<Int>): IntEntity(id) {
 
                     translations.forEach { translation ->
                         PokemonTranslationTable.insert {
-                            it[this.name] = translation.name.lowercase()
+                            it[name] = translation.name.lowercase()
                             it[pokemonId] = id
                             it[language] = translation.language.name
                         }
@@ -128,33 +126,28 @@ class Pokemon(id: EntityID<Int>): IntEntity(id) {
         }
     }
 
-    var name by PokemonTable.name
-    var baseExperience by PokemonTable.baseExperience
-    var weight by PokemonTable.weight
-    var height by PokemonTable.height
-    var maleSprite by PokemonTable.maleSprite
-    var femaleSprite by PokemonTable.femaleSprite
-    var artwork by PokemonTable.artwork
+    var name by PokemonMetaTable.name
+    var baseExperience by PokemonMetaTable.baseExperience
+    var weight by PokemonMetaTable.weight
+    var height by PokemonMetaTable.height
+    var maleSprite by PokemonMetaTable.maleSprite
+    var femaleSprite by PokemonMetaTable.femaleSprite
+    var artwork by PokemonMetaTable.artwork
 }
 
 object PokemonTranslationTable: Table("pokemon_translation") {
     val name = varchar("name", 255)
-    val pokemonId = reference("pokemon", PokemonTable)
+    val pokemonId = reference("pokemon", PokemonMetaTable)
     val language = varchar("language", 255)
     override val primaryKey = PrimaryKey(pokemonId, language)
 }
 
-object Trainers: Table() {
-    val id = integer("id")
-    override val primaryKey = PrimaryKey(id)
-}
-
-object PokemonStats: Table() {
-    val pokemonId = PokemonTable.id
-    val trainerId = Trainers.id
+object TrainerTable: LongIdTable("trainer") {
+    val timeStarted = timestamp("time_started")
+    val timeLastMessage = timestamp("time_last_message")
+    val messageStreak = integer("message_streak")
+    val messages = integer("messages")
     val experience = integer("experience")
-    val rarity = enumeration("rarity", Rarity::class)
-    override val primaryKey = PrimaryKey(pokemonId, trainerId)
 }
 
 enum class Rarity {
